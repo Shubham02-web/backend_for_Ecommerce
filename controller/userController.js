@@ -87,6 +87,7 @@ export const loginController = async (req, res, next) => {
 export const UserProfileController = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
+    user.password = undefined;
     return res.status(401).send({
       succes: true,
       message: "user profile fatched suceesfully",
@@ -98,6 +99,87 @@ export const UserProfileController = async (req, res) => {
       succes: false,
       message: "Internal server Error",
       error,
+    });
+  }
+};
+
+export const UserLogout = async (req, res, next) => {
+  try {
+    return res
+      .status(201)
+      .cookie("token", "", {
+        expire: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+        secure: process.env.NODE_ENV === "Development" ? true : false,
+        httpOnly: process.env.NODE_ENV === "Development" ? true : false,
+        sameSite: process.env.NODE_ENV === "Development" ? true : false,
+      })
+      .send({
+        succes: true,
+        message: "user logout succesfully",
+      });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      succes: false,
+      message: "error in logout api",
+    });
+  }
+};
+
+export const updateUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const { name, email, password, address, city, country, phone, profilePic } =
+      req.body;
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = password;
+    if (address) user.address = address;
+    if (city) user.city = city;
+    if (country) user.country = country;
+    if (phone) user.phone = phone;
+    if (profilePic) user.profilePic = profilePic;
+
+    await user.save();
+
+    return res.status(201).send({
+      succes: true,
+      message: "user updated successfully",
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      succes: false,
+      message: "Error In Update User",
+    });
+  }
+};
+
+export const UpdatePassword = async (req, res, next) => {
+  try {
+    const user = await User.findById(user.user._id);
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword)
+      return res.status(500).send({
+        succes: false,
+        message: "missing oldPassword or newPassword",
+      });
+
+    const isMatch = await user.comparePassword(oldPassword);
+
+    if (!isMatch)
+      return res.status(500).send({
+        succes: false,
+        message: "invalid oldPassword",
+      });
+    user.password = password;
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      succes: true,
+      message: "Error in Update Password",
     });
   }
 };
