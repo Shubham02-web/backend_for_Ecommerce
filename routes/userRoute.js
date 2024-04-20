@@ -1,6 +1,7 @@
-import express from "express";
+import express, { Router } from "express";
 import {
   UpdatePassword,
+  UpdateProfilePicController,
   UserLogout,
   UserProfileController,
   loginController,
@@ -8,6 +9,7 @@ import {
   updateUser,
 } from "../controller/userController.js";
 import { isAuth } from "../middleware/AuthMiddlerware.js";
+import { singleUpload } from "../middleware/multer.js";
 
 // route object
 const route = express.Router();
@@ -21,5 +23,6 @@ route.get("/profile", isAuth, UserProfileController);
 route.get("/logout", isAuth, UserLogout);
 route.put("/updateUser", isAuth, updateUser);
 route.put("/updatePassword", isAuth, UpdatePassword);
+route.put("/update-pic", isAuth, singleUpload, UpdateProfilePicController);
 // export route
 export default route;

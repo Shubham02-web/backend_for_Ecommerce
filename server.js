@@ -4,12 +4,14 @@ import dotenv from "dotenv";
 import colors from "colors";
 import cors from "cors";
 import cookie from "cookie-parser";
+import cloudinary from "cloudinary";
 
 // import db connection
 import connectDB from "./config/db.js";
 // importing routes
 import TestRouter from "./routes/TestRoute.js";
 import userRoute from "./routes/userRoute.js";
+import productRoute from "./routes/Product.js";
 // Dot Env Config
 
 dotenv.config();
@@ -29,9 +31,18 @@ app.get("/", function (req, res, next) {
 
 connectDB(mongo_uri);
 
+// cloudniary configurtion
+
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
+});
+
 // Router Use
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1", TestRouter);
+app.use("/api/v1/Products", productRoute);
 
 const Port = process.env.PORT || 8080;
 

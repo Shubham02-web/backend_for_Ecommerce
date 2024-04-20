@@ -1,19 +1,12 @@
 import { User } from "../models/UserModel.js";
 import cookie from "cookie-parser";
+import { getDataUri } from "../utils/features.js";
+import cloudinary from "cloudinary";
 export const registerController = async (req, res, next) => {
   const { name, email, password, address, city, country, phone, profilePic } =
     req.body;
 
-  if (
-    !name ||
-    !email ||
-    !password ||
-    !address ||
-    !city ||
-    !country ||
-    !phone ||
-    !profilePic
-  )
+  if (!name || !email || !password || !address || !city || !country || !phone)
     return console.log("all fields are required");
   try {
     const existingUser = await User.findOne({ email });
@@ -32,7 +25,6 @@ export const registerController = async (req, res, next) => {
       city,
       country,
       phone,
-      profilePic,
     });
 
     return res.status(201).json({
@@ -180,6 +172,39 @@ export const UpdatePassword = async (req, res, next) => {
     res.status(500).send({
       succes: true,
       message: "Error in Update Password",
+    });
+  }
+};
+
+export const UpdateProfilePicController = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const file = getDataUri(req.file);
+
+    // delete previous image
+    await cloudinary.v2.uploader.destroy(user.profilePic.public_id);
+
+    // update image
+
+    const cdb = await cloudinary.v2.uploader.upload(file.content);
+    user.profilePic = {
+      public_id: cdb.public_id,
+      url: cdb.secure_url,
+    };
+
+    // save function calling
+
+    await user.save();
+
+    res.status(200).send({
+      succes: true,
+      message: "Profile pic updated succefully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      succes: true,
+      message: "Error in Update Profile pic API ",
     });
   }
 };

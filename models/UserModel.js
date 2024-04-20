@@ -36,7 +36,10 @@ const userSchema = new mongoose.Schema(
       require: [true, "phone number is required"],
       minLength: [10, "phone number must be in 10 digit"],
     },
-    profilePic: String,
+    profilePic: {
+      public_id: String,
+      url: String,
+    },
   },
   { timestamps: true }
 );
