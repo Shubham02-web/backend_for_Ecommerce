@@ -265,3 +265,50 @@ export const deleteProduct = async (req, res, next) => {
     });
   }
 };
+
+export const ReviewAndRating = async (req, res, send) => {
+  try {
+    const { rating, comment } = req.body;
+    const product = await ProductModel.findById(req.params.id);
+
+    const allReadyReview = product.reviews.find(
+      (r) => r.user.toString() === req.user._id.toString()
+    );
+    if (allReadyReview)
+      return res.status(400).send({
+        success: false,
+        message: "user allready reviewed",
+      });
+    const review = {
+      name: req.user.name,
+      rating: Number(rating),
+      comment,
+      user: user.req._id,
+    };
+    product.reviews.push(review);
+    product.numReviews = product.reviews.length;
+    product.rating =
+      product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+      product.reviews.length;
+
+    await product.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Review Added",
+    });
+  } catch (error) {
+    console.log(error);
+    // Handling caste Error
+    if (error.name === "CastError")
+      return res.status(500).send({
+        success: false,
+        message: "Invalid ID",
+      });
+    res.status(500).send({
+      success: false,
+      message: "Error in Update Product API",
+      error,
+    });
+  }
+};

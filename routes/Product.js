@@ -14,9 +14,11 @@ const route = express.Router();
 
 route.get("/all-products", getAllProducts);
 route.get("/:id", getSingleProduct);
-route.post("/createProduct", isAuth, singleUpload, createProduct);
+route.post("/createProduct", singleUpload, createProduct);
 route.put("/:id", isAuth, updateProduct);
 route.put("/image/:id", isAuth, singleUpload, updateProductImage);
 route.delete("/delete-image/:id", isAuth, deleteProductImage);
 route.delete("/delete/:id", isAuth, deleteProduct);
+
+route.put("/:id/review");
 export default route;
