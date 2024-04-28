@@ -6,7 +6,8 @@ import cors from "cors";
 import cookie from "cookie-parser";
 import cloudinary from "cloudinary";
 import Stripe from "stripe";
-
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
 // import db connection
 import connectDB from "./config/db.js";
 // importing routes
@@ -26,6 +27,8 @@ export const stripe = new Stripe(process.env.STRIPE_API_SECRET);
 const app = express();
 const mongo_uri = process.env.MONGO_URL || "";
 // MiddleWars
+app.use(helmet());
+app.use(mongoSanitize());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
