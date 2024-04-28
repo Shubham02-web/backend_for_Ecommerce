@@ -2,8 +2,14 @@ import ProductModel from "../models/ProductModel.js";
 import { getDataUri } from "../utils/features.js";
 import cloudinary from "cloudinary";
 export const getAllProducts = async (req, res, next) => {
+  const { keyword, category } = req.query;
   try {
-    const product = await ProductModel.find({});
+    const product = await ProductModel.find({
+      name: {
+        $regex: keyword ? keyword : "",
+        $options: "i",
+      },
+    }).populate("category");
     res.status(200).send({
       success: true,
       message: "Products found succesfully",
@@ -19,6 +25,22 @@ export const getAllProducts = async (req, res, next) => {
   }
 };
 
+export const getTopProducts = async (req, res, next) => {
+  try {
+    const products = await ProductModel.find({}).sort({ rating: -1 }).limit(5);
+    res.status(200).send({
+      success: true,
+      message: "Top 5 Products",
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error in getTop Products API",
+    });
+  }
+};
 export const getSingleProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
