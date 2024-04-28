@@ -3,10 +3,28 @@ import cookie from "cookie-parser";
 import { getDataUri } from "../utils/features.js";
 import cloudinary from "cloudinary";
 export const registerController = async (req, res, next) => {
-  const { name, email, password, address, city, country, phone, profilePic } =
-    req.body;
+  const {
+    name,
+    email,
+    password,
+    address,
+    city,
+    country,
+    answer,
+    phone,
+    profilePic,
+  } = req.body;
 
-  if (!name || !email || !password || !address || !city || !country || !phone)
+  if (
+    !name ||
+    !email ||
+    !password ||
+    !address ||
+    !city ||
+    !country ||
+    !phone ||
+    !answer
+  )
     return console.log("all fields are required");
   try {
     const existingUser = await User.findOne({ email });
@@ -23,6 +41,7 @@ export const registerController = async (req, res, next) => {
       password,
       address,
       city,
+      answer,
       country,
       phone,
     });
@@ -205,6 +224,38 @@ export const UpdateProfilePicController = async (req, res, next) => {
     res.status(500).send({
       succes: true,
       message: "Error in Update Profile pic API ",
+    });
+  }
+};
+
+export const ResetPassword = async (req, res, next) => {
+  try {
+    const { email, answer, newPassword } = req.body;
+    if (!email || !answer || !newPassword)
+      return res.status(500).send({
+        success: false,
+        message: "please enter all fields ",
+      });
+    const user = await User.find({ email, answer });
+
+    if (!user)
+      return res.status(404).send({
+        success: false,
+        message: "Invalid email or answer",
+      });
+
+    user.password = newPassword;
+
+    await user.save();
+    res.status(200).send({
+      success: true,
+      message: "Password Reset Successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      succes: false,
+      message: "Error in Reset Password API",
     });
   }
 };
