@@ -5,6 +5,7 @@ import colors from "colors";
 import cors from "cors";
 import cookie from "cookie-parser";
 import cloudinary from "cloudinary";
+import Stripe from "stripe";
 
 // import db connection
 import connectDB from "./config/db.js";
@@ -12,10 +13,15 @@ import connectDB from "./config/db.js";
 import TestRouter from "./routes/TestRoute.js";
 import userRoute from "./routes/userRoute.js";
 import productRoute from "./routes/Product.js";
+import categoryRoute from "./routes/Category.js";
+import OrderRoute from "./routes/OrderRoute.js";
 // Dot Env Config
 
 dotenv.config();
 
+// Stripe config
+
+export const stripe = new Stripe(process.env.STRIPE_API_SECRET);
 // Objects
 const app = express();
 const mongo_uri = process.env.MONGO_URL || "";
@@ -43,6 +49,8 @@ cloudinary.v2.config({
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1", TestRouter);
 app.use("/api/v1/Products", productRoute);
+app.use("/api/v1/Cat", categoryRoute);
+app.use("/api/v1/orders", OrderRoute);
 
 const Port = process.env.PORT || 8080;
 

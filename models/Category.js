@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const CategorySchema = new mongoose.Schema(
   {
-    Category: {
+    category: {
       type: String,
       required: [true, "Category is required"],
     },

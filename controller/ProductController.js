@@ -97,3 +97,171 @@ export const createProduct = async (req, res, next) => {
     });
   }
 };
+
+export const updateProduct = async (req, res, next) => {
+  try {
+    const product = await ProductModel.findById(req.params.id);
+    if (!product)
+      return res.status(404).send({
+        success: false,
+        message: "Product not found",
+      });
+
+    const { name, description, price, stock, category } = req.body;
+    if (name) product.name = name;
+    if (description) product.description = description;
+    if (price) product.price = price;
+    if (stock) product.stock = stock;
+    if (category) product.category = category;
+
+    await product.save();
+    res.status(200).send({
+      success: true,
+      message: "product updated succesfully",
+      product,
+    });
+  } catch (error) {
+    console.log(error);
+    // Handling caste Error
+    if (error.name === "CastError")
+      return res.status(500).send({
+        success: false,
+        message: "Invalid ID",
+      });
+    res.status(500).send({
+      success: false,
+      message: "Error in Update Product API",
+      error,
+    });
+  }
+};
+
+export const updateProductImage = async (req, res, next) => {
+  try {
+    const product = await ProductModel.findById(req.params.id);
+    if (!product)
+      return res.status(404).send({
+        success: false,
+        message: "product not found",
+      });
+
+    if (!req.file)
+      return res.status(500).send({
+        success: false,
+        message: "Image not found",
+      });
+
+    const file = getDataUri(req.file);
+
+    const cdb = await cloudinary.v2.uploader.upload(file.content);
+    const image = {
+      public_id: cdb.public_id,
+      url: cdb.secure_url,
+    };
+    product.images.push(image);
+    await product.save();
+
+    res.status(200).send({
+      success: true,
+      message: "product image update successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    // Handling caste Error
+    if (error.name === "CastError")
+      return res.status(500).send({
+        success: false,
+        message: "Invalid ID",
+      });
+    res.status(500).send({
+      success: false,
+      message: "Error in Update Product Image API",
+      error,
+    });
+  }
+};
+
+export const deleteProductImage = async (req, res, next) => {
+  try {
+    const product = await ProductModel.findById(req.params.id);
+    if (!product)
+      return res.status(404).send({
+        success: true,
+        message: "Product not found",
+      });
+
+    const id = req.query.id;
+    if (!id)
+      return res.status(404).send({
+        success: false,
+        message: "Product Image Not Found",
+      });
+
+    let isExists = -1;
+    product.images.forEach((item, index) => {
+      if (item._id.toString() === id.toString()) isExists = index;
+    });
+
+    if (isExists < 0)
+      return res.status(404).send({
+        success: false,
+        message: "Image not found",
+      });
+
+    await cloudinary.v2.uploader.destroy(product.images[isExists].public_id);
+    product.images.splice(isExists, 1);
+    await product.save();
+
+    return res.status(200).send({
+      success: true,
+      message: "product image deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    // Handling caste Error
+    if (error.name === "CastError")
+      return res.status(500).send({
+        success: false,
+        message: "Invalid ID",
+      });
+    res.status(500).send({
+      success: false,
+      message: "Error in delete Product Image API",
+      error,
+    });
+  }
+};
+
+export const deleteProduct = async (req, res, next) => {
+  try {
+    const product = await ProductModel.findById(req.params.id);
+    if (!product)
+      return res.status(404).send({
+        success: false,
+        message: "Product not found",
+      });
+
+    // find and delete image cloudinary
+    for (let index = 0; index < product.images.length; index++) {
+      await cloudinary.v2.uploader.destroy(product.images[index].public_id);
+    }
+    await product.deleteOne();
+    res.status(200).send({
+      success: true,
+      message: "product deleted succefully",
+    });
+  } catch (error) {
+    console.log(error);
+    // Handling caste Error
+    if (error.name === "CastError")
+      return res.status(500).send({
+        success: false,
+        message: "Invalid ID",
+      });
+    res.status(500).send({
+      success: false,
+      message: "Error in delete Product API",
+      error,
+    });
+  }
+};
