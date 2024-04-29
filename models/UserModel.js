@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema(
       require: [true, "country name required"],
     },
     phone: {
-      type: String,
+      type: Number,
       require: [true, "phone number is required"],
       minLength: [10, "phone number must be in 10 digit"],
     },
@@ -54,8 +54,8 @@ const userSchema = new mongoose.Schema(
 );
 // functions
 // hash function
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return next();
+userSchema.pre("save", async function (req, res, next) {
+  if (!this.isModified("password")) return next;
   this.password = await bcrypt.hash(this.password, 10);
 });
 

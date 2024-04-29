@@ -3,18 +3,8 @@ import cookie from "cookie-parser";
 import { getDataUri } from "../utils/features.js";
 import cloudinary from "cloudinary";
 export const registerController = async (req, res, next) => {
-  const {
-    name,
-    email,
-    password,
-    address,
-    city,
-    country,
-    answer,
-    phone,
-    profilePic,
-  } = req.body;
-
+  const { name, email, password, address, city, country, answer, phone, role } =
+    req.body;
   if (
     !name ||
     !email ||
@@ -25,7 +15,10 @@ export const registerController = async (req, res, next) => {
     !phone ||
     !answer
   )
-    return console.log("all fields are required");
+    return res.status(400).send({
+      success: false,
+      message: "please Enter All Fields",
+    });
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -44,9 +37,10 @@ export const registerController = async (req, res, next) => {
       answer,
       country,
       phone,
+      role,
     });
 
-    return res.status(201).json({
+    res.status(201).json({
       succes: true,
       message: "user created succesfully",
       user,
@@ -130,7 +124,7 @@ export const UserLogout = async (req, res, next) => {
       });
   } catch (error) {
     console.log(error);
-    return res.status(500).send({
+    return res.status().send({
       succes: false,
       message: "error in logout api",
     });
@@ -169,7 +163,6 @@ export const updateUser = async (req, res, next) => {
 
 export const UpdatePassword = async (req, res, next) => {
   try {
-    const user = await User.findById(user.user._id);
     const { oldPassword, newPassword } = req.body;
 
     if (!oldPassword || !newPassword)
@@ -177,6 +170,7 @@ export const UpdatePassword = async (req, res, next) => {
         succes: false,
         message: "missing oldPassword or newPassword",
       });
+    const user = await User.findById(req.user._id);
 
     const isMatch = await user.comparePassword(oldPassword);
 
@@ -185,7 +179,13 @@ export const UpdatePassword = async (req, res, next) => {
         succes: false,
         message: "invalid oldPassword",
       });
-    user.password = password;
+    user.password = newPassword;
+    await user.save();
+    res.status(200).send({
+      success: true,
+      message: "Password Updated Succesfully",
+      user,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -200,9 +200,15 @@ export const UpdateProfilePicController = async (req, res, next) => {
     const user = await User.findById(req.user._id);
     const file = getDataUri(req.file);
 
+    if (!file)
+      return res.status(400).send({
+        success: false,
+        message: "file is compulsory",
+      });
     // delete previous image
-    await cloudinary.v2.uploader.destroy(user.profilePic.public_id);
-
+    if (user.profilePic.public_id) {
+      await cloudinary.v2.uploader.destroy(user.profilePic.public_id);
+    }
     // update image
 
     const cdb = await cloudinary.v2.uploader.upload(file.content);
@@ -236,20 +242,26 @@ export const ResetPassword = async (req, res, next) => {
         success: false,
         message: "please enter all fields ",
       });
-    const user = await User.find({ email, answer });
-
+    const user = await User.findOne({ email });
     if (!user)
       return res.status(404).send({
         success: false,
-        message: "Invalid email or answer",
+        message: "Invalid email",
+      });
+
+    if (user.answer != answer)
+      return res.status(400).send({
+        success: false,
+        message: "answer is incorrect",
       });
 
     user.password = newPassword;
 
-    await user.save();
+    // await user.save();
     res.status(200).send({
       success: true,
       message: "Password Reset Successfully",
+      user,
     });
   } catch (error) {
     console.log(error);

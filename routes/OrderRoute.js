@@ -11,7 +11,8 @@ import { isAdmin, isAuth } from "../middleware/AuthMiddlerware.js";
 
 const route = express.Router();
 
-route.post("/createOrder", isAuth, isAdmin, CreateOrder);
+// http://localhost:8080/api/v1/orders/createOrder
+route.post("/createOrder", isAuth, CreateOrder);
 
 route.get("/MyAll-Orders", isAuth, GetMyAllOrders);
 

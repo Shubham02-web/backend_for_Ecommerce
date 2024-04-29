@@ -11,17 +11,24 @@ import {
   updateProduct,
   updateProductImage,
 } from "../controller/ProductController.js";
-import { isAuth } from "../middleware/AuthMiddlerware.js";
+import { isAuth, isAdmin } from "../middleware/AuthMiddlerware.js";
 const route = express.Router();
 
+// http://localhost:8080/api/v1/Products/all-products
 route.get("/all-products", getAllProducts);
-route.get("top", getTopProducts);
+route.get("/top", getTopProducts);
 route.get("/:id", getSingleProduct);
-route.post("/createProduct", singleUpload, createProduct);
-route.put("/:id", isAuth, updateProduct);
-route.put("/image/:id", isAuth, singleUpload, updateProductImage);
-route.delete("/delete-image/:id", isAuth, deleteProductImage);
-route.delete("/delete/:id", isAuth, deleteProduct);
+route.post("/createProduct", isAuth, isAdmin, singleUpload, createProduct);
+route.put("/updateProduct/:id", isAuth, isAdmin, updateProduct);
+route.put(
+  "/updateProductImage/:id",
+  isAuth,
+  isAdmin,
+  singleUpload,
+  updateProductImage
+);
+route.put("/review/:id", isAuth, ReviewAndRating);
+route.delete("/delete-image/:id", isAuth, isAdmin, deleteProductImage);
+route.delete("/delete/:id", isAuth, isAdmin, deleteProduct);
 
-route.put("/:id/review", ReviewAndRating);
 export default route;

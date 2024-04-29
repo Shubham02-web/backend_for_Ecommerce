@@ -26,7 +26,7 @@ const limiter = rateLimit({
 const route = express.Router();
 
 // routes
-
+// http://localhost:8080/api/v1/user/register
 route.post("/register", limiter, registerController);
 route.post("/login", limiter, loginController);
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { isAuth } from "../middleware/AuthMiddlerware.js";
+import { isAuth, isAdmin } from "../middleware/AuthMiddlerware.js";
 import {
   UpdateCategory,
   createCategory,
@@ -8,8 +8,9 @@ import {
 } from "../controller/CategoryController.js";
 const route = express.Router();
 
-route.post("/createCategory", isAuth, createCategory);
+// http://localhost:8080/api/v1/Cat/createCategory
+route.post("/createCategory", isAuth, isAdmin, createCategory);
 route.get("/all-category", getAllCategory);
-route.delete("/delete/:id", isAuth, deleteCategory);
-route.put("/Update/:id", isAuth, UpdateCategory);
+route.delete("/delete/:id", isAuth, isAdmin, deleteCategory);
+route.put("/Update/:id", isAuth, isAdmin, UpdateCategory);
 export default route;
