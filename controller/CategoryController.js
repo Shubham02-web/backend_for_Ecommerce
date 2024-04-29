@@ -87,6 +87,11 @@ export const UpdateCategory = async (req, res, next) => {
         message: "Category not found",
       });
     const { updatedCategory } = req.body;
+    if (!updatedCategory)
+      return res.status(400).send({
+        success: true,
+        message: "updatedCategory is required",
+      });
     const products = await ProductModel.find({ category: category._id });
     for (let i = 0; i < products.length; i++) {
       const product = products[i];
