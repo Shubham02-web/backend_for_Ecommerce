@@ -257,7 +257,7 @@ export const ResetPassword = async (req, res, next) => {
 
     user.password = newPassword;
 
-    // await user.save();
+    await user.save();
     res.status(200).send({
       success: true,
       message: "Password Reset Successfully",
