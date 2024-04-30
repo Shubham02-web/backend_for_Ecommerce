@@ -1,4 +1,6 @@
+import Category from "../models/Category.js";
 import ProductModel from "../models/ProductModel.js";
+import { User } from "../models/UserModel.js";
 import { getDataUri } from "../utils/features.js";
 import cloudinary from "cloudinary";
 export const getAllProducts = async (req, res, next) => {
@@ -27,7 +29,10 @@ export const getAllProducts = async (req, res, next) => {
 
 export const getTopProducts = async (req, res, next) => {
   try {
-    const products = await ProductModel.find({}).sort({ rating: -1 }).limit(5);
+    const products = await ProductModel.find({})
+      .sort({ rating: -1 })
+      .limit(5)
+      .populate("category");
     res.status(200).send({
       success: true,
       message: "Top 5 Products",
@@ -45,7 +50,7 @@ export const getSingleProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!id) return console.log("please provide Product ID");
-    const product = await ProductModel.findById(id);
+    const product = await ProductModel.findById(id).populate("category");
 
     if (!product)
       return res.status(404).send({
@@ -77,7 +82,7 @@ export const createProduct = async (req, res, next) => {
   try {
     const { name, description, price, stock, category } = req.body;
 
-    if (!name || !description || !price || !stock)
+    if (!name || !description || !price || !stock || !category)
       return res.status(500).send({
         success: false,
         message: "please provide all fields",
@@ -128,8 +133,7 @@ export const updateProduct = async (req, res, next) => {
         success: false,
         message: "Product not found",
       });
-
-    const { name, description, price, stock, category } = req.body;
+    const { name, description, price, stock, category } = await req.body;
     if (name) product.name = name;
     if (description) product.description = description;
     if (price) product.price = price;
@@ -137,7 +141,7 @@ export const updateProduct = async (req, res, next) => {
     if (category) product.category = category;
 
     await product.save();
-    res.status(200).send({
+    return res.status(200).send({
       success: true,
       message: "product updated succesfully",
       product,
@@ -212,6 +216,7 @@ export const deleteProductImage = async (req, res, next) => {
         message: "Product not found",
       });
 
+    //  Provide Product Image ID as a query
     const id = req.query.id;
     if (!id)
       return res.status(404).send({
@@ -292,7 +297,7 @@ export const ReviewAndRating = async (req, res, send) => {
   try {
     const { rating, comment } = req.body;
     const product = await ProductModel.findById(req.params.id);
-
+    const userFunc = await User.findById(req.user._id);
     const allReadyReview = product.reviews.find(
       (r) => r.user.toString() === req.user._id.toString()
     );
@@ -302,10 +307,10 @@ export const ReviewAndRating = async (req, res, send) => {
         message: "user allready reviewed",
       });
     const review = {
-      name: req.user.name,
+      name: userFunc.name,
       rating: Number(rating),
       comment,
-      user: user.req._id,
+      user: userFunc._id,
     };
     product.reviews.push(review);
     product.numReviews = product.reviews.length;

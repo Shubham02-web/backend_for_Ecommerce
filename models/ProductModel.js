@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 const review = new mongoose.Schema(
   {
     name: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.String,
       ref: "Users",
       required: [true, "name is required"],
     },
@@ -12,6 +12,7 @@ const review = new mongoose.Schema(
     },
     comment: {
       type: String,
+      required: [true, "comment is required"],
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
