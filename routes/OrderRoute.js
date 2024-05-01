@@ -3,6 +3,8 @@ import {
   CreateOrder,
   GetMyAllOrders,
   PaymentController,
+  cancelOrder,
+  cancelSingleOrder,
   getAllOrderAdmin,
   getMySingleOrder,
   updateOrderStatus,
@@ -13,12 +15,14 @@ const route = express.Router();
 
 // http://localhost:8080/api/v1/orders/createOrder
 route.post("/createOrder", isAuth, CreateOrder);
+route.post("/payement", isAuth, PaymentController);
 
 route.get("/MyAll-Orders", isAuth, GetMyAllOrders);
 
 route.get("/getMySingleOrder/:id", isAuth, getMySingleOrder);
-route.post("/payement", isAuth, PaymentController);
 route.get("/admin-getAllOrder", isAuth, isAdmin, getAllOrderAdmin);
 route.put("/updateOrderStatus/:id", isAuth, isAdmin, updateOrderStatus);
+route.delete("/deleteAllOrder", isAuth, cancelOrder);
+route.delete("/deleteSingleOrder/:id", isAuth, cancelSingleOrder);
 
 export default route;

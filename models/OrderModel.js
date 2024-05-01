@@ -72,6 +72,7 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       requried: [true, "total price amount is required"],
     },
+
     orderStatus: {
       type: String,
       enum: ["Processing", "Shipped", "Deliverd"],
